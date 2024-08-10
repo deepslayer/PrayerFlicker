@@ -1,5 +1,8 @@
 # Prayer Flicking Script
 
+![Prayer Flicking Demo](media/PrayFlickDemo.gif)
+
+
 ## Overview
 
 **Prayer Flicking Script** is an Old School RuneScape (OSRS) script that automatically flicks protection prayers based on the attack speed of enemies. The script is designed to maximize prayer efficiency by toggling the prayer at the exact time it's needed during combat, preventing the drainage of prayer points
