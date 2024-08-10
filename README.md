@@ -1,6 +1,6 @@
 # Prayer Flicking Script
 
-![Prayer Flicking Demo](media/PrayFlickDemo.gif)
+![Prayer Flicking Demo](src/media/PrayFlickDemo.gif)
 
 
 ## Overview
