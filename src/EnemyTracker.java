@@ -4,59 +4,58 @@ import org.dreambot.api.wrappers.interactive.NPC;
 public class EnemyTracker {
 
     private final PrayerFlickingScript script;
-    private int lastAnimation = -1;
+    private NPC enemy;
+    private EnemyAttackSpeed enemyAttackSpeed;
+    private boolean isSynced;
 
     public EnemyTracker(PrayerFlickingScript script) {
         this.script = script;
+        this.isSynced = false;
     }
 
     public void detectEnemy() {
-        NPC enemy = (NPC) Players.getLocal().getCharacterInteractingWithMe();
-        if (enemy != null) {
-            script.setEnemy(enemy);
-            script.setEnemyAttackSpeed(EnemyAttackSpeedMapping.getAttackSpeedForEnemy(enemy.getName()));
-            script.log("Enemy detected: " + enemy.getName() + ", Attack speed: " + script.getEnemyAttackSpeed().getTicks() + " ticks.");
+        NPC detectedEnemy = (NPC) Players.getLocal().getCharacterInteractingWithMe();
+        if (detectedEnemy != null) {
+            enemy = detectedEnemy;
+            enemyAttackSpeed = EnemyAttackSpeedMapping.getAttackSpeedForEnemy(enemy.getName());
+            script.log("Enemy detected: " + enemy.getName() + ", Attack speed: " + enemyAttackSpeed.getTicks() + " ticks.");
+            isSynced = false;
         } else {
             script.log("No enemy detected.");
-
+            isSynced = false;
         }
     }
 
     public void updateEnemyIfNecessary() {
         NPC newEnemy = (NPC) Players.getLocal().getCharacterInteractingWithMe();
-        if (newEnemy != null && !newEnemy.equals(script.getEnemy())) {
-            script.setEnemy(newEnemy);
-            script.setEnemyAttackSpeed(EnemyAttackSpeedMapping.getAttackSpeedForEnemy(newEnemy.getName()));
-            script.log("Enemy changed to: " + newEnemy.getName() + ", Attack speed: " + script.getEnemyAttackSpeed().getTicks() + " ticks.");
-            script.setSynced(false); // Reset synchronization when the enemy changes
+        if (newEnemy != null && !newEnemy.equals(enemy)) {
+            enemy = newEnemy;
+            enemyAttackSpeed = EnemyAttackSpeedMapping.getAttackSpeedForEnemy(newEnemy.getName());
+            script.log("Enemy changed to: " + newEnemy.getName() + ", Attack speed: " + enemyAttackSpeed.getTicks() + " ticks.");
+            isSynced = false;
         }
     }
 
-    public void synchronizeWithEnemyAttack() {
-        NPC enemy = script.getEnemy();
-        if (enemy != null && Players.getLocal().isInCombat()) {
-            int currentAnimation = enemy.getAnimation();
-
-            if (!script.isSynced() && currentAnimation != lastAnimation && isAttackAnimation(currentAnimation)) {
-                script.log("Initial attack animation detected! Synchronizing tick counter.");
-                script.setTicksSinceLastAttack(0);
-                script.setSynced(true);
-            }
-
-            if (script.isSynced()) {
-                script.setTicksSinceLastAttack(script.getTicksSinceLastAttack() + 1);
-
-                if (script.getTicksSinceLastAttack() == script.getEnemyAttackSpeed().getTicks()) {
-                    script.setShouldFlickPrayer(true);
-                    script.setTicksSinceLastAttack(0);
-                }
-            }
-
-            lastAnimation = currentAnimation;
+    public boolean isEnemyStillAttacking() {
+        if (enemy == null || enemy.getHealthPercent() == 0 || !Players.getLocal().isInCombat() || !enemy.exists()) {
+            return false;
         }
+        return enemy.equals(Players.getLocal().getCharacterInteractingWithMe());
     }
 
-    private boolean isAttackAnimation(int animation) {
-        return animation != -1;
+    public NPC getEnemy() {
+        return enemy;
+    }
+
+    public EnemyAttackSpeed getEnemyAttackSpeed() {
+        return enemyAttackSpeed;
+    }
+
+    public boolean isSynced() {
+        return isSynced;
+    }
+
+    public void setSynced(boolean synced) {
+        this.isSynced = synced;
     }
 }
